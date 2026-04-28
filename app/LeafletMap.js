@@ -60,9 +60,9 @@ export default function LeafletMap({
         if (heat) {
           L.circle([point.lat, point.lng], {
             radius: point.radius || 80,
-            color: "#fbbf24",
-            fillColor: "#fbbf24",
-            fillOpacity: 0.22,
+            color: "#ef4444",
+            fillColor: "#ef4444",
+            fillOpacity: 0.28,
             weight: 2,
           }).addTo(map);
         } else {
