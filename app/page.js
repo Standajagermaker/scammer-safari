@@ -10,9 +10,42 @@ const inputStyle = {
   color: "white",
 };
 
+const helpTextStyle = {
+  margin: "-6px 0 0",
+  color: "#aaa",
+  fontSize: "13px",
+  lineHeight: 1.4,
+};
+
 export default function Home() {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+
+  async function uploadPhoto(file) {
+    if (!file || file.size === 0) return "";
+
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+    const filePath = `${Date.now()}-${safeName}`;
+    const uploadUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/evidence/${filePath}`;
+
+    const response = await fetch(uploadUrl, {
+      method: "POST",
+      headers: {
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+        "Content-Type": file.type || "application/octet-stream",
+        "x-upsert": "false",
+      },
+      body: file,
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || "Could not upload photo");
+    }
+
+    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/evidence/${filePath}`;
+  }
 
   async function submitReport(event) {
     event.preventDefault();
@@ -21,17 +54,23 @@ export default function Home() {
     setStatus("");
 
     const form = new FormData(formElement);
-    const payload = {
-      city: form.get("city") || "Unknown",
-      area: form.get("area") || "Unknown area",
-      scam_type: form.get("scam_type") || "Street exchange scam",
-      amount: form.get("amount") || "Unknown",
-      incident_date: form.get("incident_date") || new Date().toISOString().slice(0, 10),
-      description: form.get("description") || "",
-      status: "unverified",
-    };
 
     try {
+      const photoFile = form.get("photo");
+      const photo_url = await uploadPhoto(photoFile);
+
+      const payload = {
+        city: form.get("city") || "Unknown",
+        area: form.get("area") || "Unknown area",
+        scam_type: form.get("scam_type") || "Street exchange scam",
+        amount: form.get("amount") || "Unknown",
+        incident_date: form.get("incident_date") || new Date().toISOString().slice(0, 10),
+        suspect_description: form.get("suspect_description") || "",
+        description: form.get("description") || "",
+        photo_url,
+        status: "unverified",
+      };
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/reports`, {
         method: "POST",
         headers: {
@@ -85,7 +124,24 @@ export default function Home() {
           <input name="area" placeholder="Location, e.g. Old Town Square" required style={inputStyle} />
           <input name="amount" placeholder="Amount lost, e.g. EUR 200" style={inputStyle} />
           <input name="incident_date" type="date" style={inputStyle} />
+
+          <textarea
+            name="suspect_description"
+            placeholder="Suspect description / nickname, e.g. blue jacket, grey hair, fake exchange guy near the clock"
+            rows={4}
+            style={inputStyle}
+          />
+          <p style={helpTextStyle}>
+            Do not write insults or personal accusations. Describe visible details and repeat patterns only.
+          </p>
+
           <textarea name="description" placeholder="What happened?" rows={6} required style={inputStyle} />
+
+          <input name="photo" type="file" accept="image/*" style={inputStyle} />
+          <p style={helpTextStyle}>
+            Optional photo evidence. Public use should be blurred before publishing identifiable faces.
+          </p>
+
           <label style={{ display: "flex", gap: 10, color: "#ccc", fontSize: 14, lineHeight: 1.5 }}>
             <input type="checkbox" required />
             I confirm this report is true to the best of my knowledge and I understand public accusations or harassment are not allowed.
