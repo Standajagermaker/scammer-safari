@@ -347,7 +347,7 @@ export default function Home() {
         <p style={{ color: "#fbbf24", fontWeight: "bold" }}>Community tourist safety map</p>
         <h1 style={{ fontSize: 54, margin: "10px 0" }}>Scammer Safari</h1>
         <p style={{ color: "#aaa", lineHeight: 1.6 }}>
-          Inspired by investigations of <strong>Janek Rubes & Honza Mikulka</strong> from {" "}
+          Inspired by investigations of <strong>Janek Rubes & Honza Mikulka</strong> We are honest, You are honest, They are {" "}
           <a href="https://www.youtube.com/@HONESTGUIDE" target="_blank" rel="noreferrer" style={{ color: "#fbbf24", textDecoration: "none", fontWeight: "bold" }}>
             Honest Guide
           </a>.
