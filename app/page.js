@@ -16,10 +16,11 @@ export default function Home() {
 
   async function submitReport(event) {
     event.preventDefault();
+    const formElement = event.currentTarget;
     setLoading(true);
     setStatus("");
 
-    const form = new FormData(event.currentTarget);
+    const form = new FormData(formElement);
     const payload = {
       city: form.get("city") || "Unknown",
       area: form.get("area") || "Unknown area",
@@ -47,7 +48,7 @@ export default function Home() {
         throw new Error(text || "Could not save report");
       }
 
-      event.currentTarget.reset();
+      formElement.reset();
       setStatus("Report saved. Thank you. Stay safe and do not confront anyone.");
     } catch (error) {
       setStatus(`Error: ${error.message}`);
